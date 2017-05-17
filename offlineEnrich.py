@@ -33,6 +33,8 @@ class INFOBOX_ENRICH:
         self.load_date_attribute_set()
         self.load_mention_set()
 
+        self.split_case = dict()
+        self.special_case = dict()
 
 
 
@@ -129,7 +131,7 @@ class INFOBOX_ENRICH:
         for word in word_list[:-1]:
             mention_list.append(word)
 
-            if word in self.mention_set== True:
+            if word in self.mention_set:
                 score +=1
             else:
                 score -=1
@@ -156,6 +158,8 @@ class INFOBOX_ENRICH:
             if score > base_score:
                 base_score = score
                 current_mention_list = mention_list
+                if split_word == '/':
+                    self.special_case[one_value] = tuple(current_mention_list)
 
         return current_mention_list
 
@@ -166,12 +170,17 @@ class INFOBOX_ENRICH:
 
         for split_o in o.split("|||"):
             value_list = self.split_one_value(split_o)
+            value_list = list(filter(lambda s: s and s.strip(), value_list))    # Remove blank character and ''
+            split_case = []
             if len(value_list) == 1:
                 split_o_list.append(split_o)
                 continue
             for v in value_list:
-                if value_list in self.punctuation_list: continue
+                if v in self.punctuation_list: continue
                 split_o_list.append(v)
+                split_case.append(v)
+            if len(split_case) > 1:
+                self.split_case[o] = tuple(split_case)
 
         split_o_list = sorted(list(set(split_o_list)))
 
@@ -195,7 +204,7 @@ class INFOBOX_ENRICH:
         with open(infobox_path, 'r', encoding = "utf-8") as f1:
             for line1 in f1:
                 count += 1
-                if count % 10000 == 0:
+                if count % 100000 == 0:
                     print(count, time.ctime())
 
 
@@ -223,6 +232,13 @@ class INFOBOX_ENRICH:
 
                 except:
                     print("error", line1)
+        with open('train.txt', 'w', encoding='utf-8') as split_file:
+            for o, split_case in self.split_case.items():
+                split_file.write(o + '\t' + '|'.join(split_case) + '\n')
+        with open('split_by_slash.txt', 'w', encoding='utf-8') as special_file:
+            for o, split_case in self.special_case.items():
+                special_file.write(o + '\t' + '|'.join(split_case) + '\n')
+
 
 
 if __name__ == "__main__":
