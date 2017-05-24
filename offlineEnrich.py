@@ -150,7 +150,7 @@ class INFOBOX_ENRICH:
         base_score = 1.1
         current_mention_list = [one_value]
 
-        if r1 == None: return current_mention_list
+        if r1 is None: return current_mention_list
 
         for split_word in set(r1):
             word_list = one_value.split(split_word)
@@ -160,6 +160,9 @@ class INFOBOX_ENRICH:
                 current_mention_list = mention_list
                 if split_word == '/':
                     self.special_case[one_value] = tuple(current_mention_list)
+
+        if re.search(punctuation_pattern, one_value) is not None:
+            self.split_case[one_value] = tuple(current_mention_list)
 
         return current_mention_list
 
@@ -171,16 +174,12 @@ class INFOBOX_ENRICH:
         for split_o in o.split("|||"):
             value_list = self.split_one_value(split_o)
             value_list = list(filter(lambda s: s and s.strip(), value_list))    # Remove blank character and ''
-            split_case = []
             if len(value_list) == 1:
                 split_o_list.append(split_o)
                 continue
             for v in value_list:
                 if v in self.punctuation_list: continue
                 split_o_list.append(v)
-                split_case.append(v)
-            if len(split_case) > 1:
-                self.split_case[o] = tuple(split_case)
 
         split_o_list = sorted(list(set(split_o_list)))
 
