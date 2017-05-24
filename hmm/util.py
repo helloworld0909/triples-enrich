@@ -25,9 +25,6 @@ class HMMFactory(object):
                 code.append(self.word2index['Unknown'])
         return code
 
-    @staticmethod
-    def encode_state(split_value):
-        return list(map(lambda c:int(c == '|'), split_value))
 
     def wordcount(self):
         wordcount = defaultdict(int)
@@ -85,9 +82,10 @@ class HMMFactory(object):
         matrix = [[0.0]*self.n_word, [0.0]*self.n_word]
         for line in self.input_file:
             raw_value, split_value = line.strip().split('\t')
-            if len(split_value) > len(raw_value):
-                print(line)
+
+            if len(split_value) != len(raw_value):
                 continue
+
             bool_split = self.toBoolean(split_value)
             for c0, c1 in zip(raw_value, bool_split):
                 matrix[c1][self.word2index[c0]] += 1
@@ -97,6 +95,9 @@ class HMMFactory(object):
                 emissionMatrix[i][j] = matrix[i][j] / sum(matrix[i])
         return emissionMatrix
 
+
+def encode_state(split_value):
+    return list(map(lambda c:int(c == '|'), split_value))
 
 def transform_state(state_list, raw_value):
     ret = []
@@ -120,4 +121,4 @@ def sample_file(filepath, n=100):
                     new_input.write(line)
 
 if __name__ == '__main__':
-    sample_file('train.txt', n = 200)
+    sample_file('train.txt', n = 300)
