@@ -215,7 +215,7 @@ class INFOBOX_ENRICH:
                     p = words1[1]
                     o = words1[2]
 
-                    if p == "CATEGORY_ZH" or p == "DESC":
+                    if p == "CATEGORY_ZH" or p == "DESC" or p == "中文名":
                         enrich_infobox_file.write(s + "\t" + p + "\t" + o + "\n")
                         continue
 
