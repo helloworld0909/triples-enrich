@@ -22,6 +22,7 @@ class HMMFactory(object):
             if c in self.word2index:
                 code.append(self.word2index[c])
             else:
+                # print('Unknown\t' + c)
                 code.append(self.word2index['Unknown'])
         return code
 
@@ -112,7 +113,7 @@ def sample_file(filepath, n=100):
     with open(filepath, 'r', encoding='utf-8') as input_file:
         input_lines = input_file.readlines()
         sample = random.sample(input_lines, n)
-        with open('test.txt', 'w', encoding='utf-8') as output_file:
+        with open('test2.txt', 'w', encoding='utf-8') as output_file:
             for line in sample:
                 output_file.write(line)
         with open('train_.txt', 'w', encoding='utf-8') as new_input:

@@ -1,10 +1,30 @@
 import numpy as np
+import re
 
 from offlineEnrich import INFOBOX_ENRICH
 from hmm.hmm import buildHMM
 import hmm.util
 
 menu_path = 'hmm/'
+
+def base_main():
+    test_file = open(menu_path + 'test.txt', 'r', encoding='utf-8')
+    test_file_lines = test_file.readlines()
+    TEST_NUM = len(test_file_lines)
+
+    punctuation_pattern = re.compile(r'[/、,，;；|]')
+
+    correct = 0
+    for line in test_file_lines:
+        raw_value, split_value = line.strip().split('\t')
+        predict = re.sub(punctuation_pattern, '|', raw_value)
+
+        if predict == split_value:
+            correct += 1
+
+    print('Base:', correct / TEST_NUM)
+
+    test_file.close()
 
 def mentioin_main():
     model = INFOBOX_ENRICH()
@@ -21,7 +41,7 @@ def mentioin_main():
         if set(predict) == set(Y):
             correct += 1
 
-    print(correct / TEST_NUM)
+    print('Mention:', correct / TEST_NUM)
 
     test_file.close()
 
@@ -47,12 +67,13 @@ def hmm_main():
         else:
             diff_file.write(raw_value + '\t' + split_value + '\t' + hmm.util.transform_state(predict, raw_value) + '\n')
 
-    print(correct / TEST_NUM)
+    print('HMM:', correct / TEST_NUM)
 
 
     diff_file.close()
     test_file.close()
 
 if __name__ == '__main__':
+    base_main()
     mentioin_main()
     hmm_main()
