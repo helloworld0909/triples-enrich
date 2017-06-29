@@ -13,6 +13,7 @@ Created on 2017-4-27
 import re
 from convert2Date import CONVERT_DATE
 import time
+from collections import defaultdict
 
 class INFOBOX_ENRICH:
 
@@ -33,8 +34,9 @@ class INFOBOX_ENRICH:
         self.load_date_attribute_set()
         self.load_mention_set()
 
-        self.split_case = dict()
-        self.special_case = dict()
+        self.stat_property = defaultdict(lambda : [0, 0])   #第一个代表属性出现次数，第二个表示这个属性的值被分割的次数
+        # self.split_case = dict()
+        # self.special_case = dict()
 
 
 
@@ -158,11 +160,11 @@ class INFOBOX_ENRICH:
             if score > base_score:
                 base_score = score
                 current_mention_list = mention_list
-                if split_word == '/':
-                    self.special_case[one_value] = tuple(current_mention_list)
+                # if split_word == '/':
+                #     self.special_case[one_value] = tuple(current_mention_list)
 
-        if re.search(punctuation_pattern, one_value) is not None:
-            self.split_case[one_value] = tuple(current_mention_list)
+        # if re.search(punctuation_pattern, one_value) is not None:
+        #     self.split_case[one_value] = tuple(current_mention_list)
 
         return current_mention_list
 
@@ -229,16 +231,27 @@ class INFOBOX_ENRICH:
                         if newo in self.mention_set: newo = "<a>" + newo + "</a>"
                         enrich_infobox_file.write(s + "\t" + newp + "\t" + newo + "\n")
 
-                except:
-                    print("error", line1)
+                    self.stat_property[p][0] += 1
+                    if len(new_o_list) > 1:
+                        self.stat_property[p][1] += 1
+
+                except Exception as e:
+                    print("error", line1, str(e))
+        self.stat_output()
+        # self.other_output()
+
+    def stat_output(self):
+        with open('stat.txt', 'w', encoding='utf-8') as stat_file:
+            for p, stats in sorted(self.stat_property.items(), key=lambda a:a[1][0], reverse=True):
+                stat_file.write(p + '\t' + str(stats[0]) + '\t' + str(stats[1]) + '\n')
+
+    def other_output(self):
         with open('train.txt', 'w', encoding='utf-8') as split_file:
             for o, split_case in self.split_case.items():
                 split_file.write(o + '\t' + '|'.join(split_case) + '\n')
         with open('split_by_slash.txt', 'w', encoding='utf-8') as special_file:
             for o, split_case in self.special_case.items():
                 special_file.write(o + '\t' + '|'.join(split_case) + '\n')
-
-
 
 if __name__ == "__main__":
     infobox_path = "infobox_testdata_enrich1.txt"
