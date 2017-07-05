@@ -5,7 +5,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import scale
 from sklearn.model_selection import cross_val_score
 
-from util import encode_char, encode_word
+from util import encode_char, encode_word, encode_twogram, get_twogram
 
 valid_split = 0.1
 random.seed(0)
@@ -44,13 +44,26 @@ def load_char_feature(filename, char_dict):
 
 def load_word_feature(filename, word_dict):
     X = []
-    code_dim = len(word_dict) + 1   # For Unknown char
+    code_dim = len(word_dict) + 1   # For Unknown word
     with open(filename, 'r', encoding='utf-8') as input_file:
         for line in input_file:
             code = np.zeros(code_dim, dtype='float32')
             name = line.strip().split('\t')[0]
-            for word in jieba.cut(name):
+            for word in jieba.cut(name, cut_all=True):
                 code[word_dict.get(word, -1)] = 1
+            X.append(code)
+
+    return X
+
+def load_twogram_feature(filename, twogram_dict):
+    X = []
+    code_dim = len(twogram_dict) + 1  # For Unknown two-gram word
+    with open(filename, 'r', encoding='utf-8') as input_file:
+        for line in input_file:
+            code = np.zeros(code_dim, dtype='float32')
+            name = line.strip().split('\t')[0]
+            for twogram in get_twogram(name):
+                code[twogram_dict.get(twogram, -1)] = 1
             X.append(code)
 
     return X
@@ -65,6 +78,7 @@ def LR(X, Y):
 
 
 def rate_count_char(char_dict):
+    global filepath
 
     X1, Y = load_data(filepath)
     X2 = load_char_feature(filepath, char_dict)
@@ -76,6 +90,7 @@ def rate_count_char(char_dict):
     LR(X, Y)
 
 def rate_count_word(word_dict):
+    global filepath
 
     X1, Y = load_data(filepath)
     X2 = load_word_feature(filepath, word_dict)
@@ -87,6 +102,7 @@ def rate_count_word(word_dict):
     LR(X, Y)
 
 def rate_count_char_word(char_dict, word_dict):
+    global filepath
 
     X1, Y = load_data(filepath)
     X2 = load_char_feature(filepath,char_dict)
@@ -95,6 +111,18 @@ def rate_count_char_word(char_dict, word_dict):
     X = []
     for x1, x2, x3 in zip(X1, X2, X3):
         X.append(np.concatenate((x1, x2, x3)))
+
+    LR(X, Y)
+
+def rate_count_twogram(twogram_dict):
+    global filepath
+
+    X1, Y = load_data(filepath)
+    X2 = load_twogram_feature(filepath, twogram_dict)
+
+    X = []
+    for x1, x2 in zip(X1, X2):
+        X.append(np.concatenate((x1, x2)))
 
     LR(X, Y)
 
@@ -116,7 +144,9 @@ if __name__ == '__main__':
 
     char_dict = encode_char(filepath, threshold=4)
     word_dict = encode_word(filepath, threshold=0)
+    twogram_dict = encode_twogram(filepath, threshold=4)
 
+    print('V1, V2, V3:', len(char_dict), len(word_dict), len(twogram_dict))
 
     print('rate_count:')
     rate_count()
@@ -132,3 +162,6 @@ if __name__ == '__main__':
 
     print('rate_count_char_word')
     rate_count_char_word(char_dict, word_dict)
+
+    print('rate_count_twogram')
+    rate_count_twogram(twogram_dict)
