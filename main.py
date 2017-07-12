@@ -7,13 +7,13 @@ from hmm.hmm import buildHMM
 import hmm.util
 from crf.CRFMetric import CRFMetric
 
-menu_path = 'hmm/'
+menu_path = 'E:\\python_workspace\\enrich\\output\\'
 punctuation_pattern = re.compile(r'[/、,，;；|]')
 
 def base_main():
     global punctuation_pattern
 
-    test_file = open(menu_path + 'test.txt', 'r', encoding='utf-8')
+    test_file = open(menu_path + 'test_labeled.txt', 'r', encoding='utf-8')
 
     count = 0
     correct = 0
@@ -35,7 +35,7 @@ def mentioin_main():
     global punctuation_pattern
 
     model = INFOBOX_ENRICH()
-    test_file = open(menu_path + 'test.txt', 'r', encoding='utf-8')
+    test_file = open(menu_path + 'test_labeled.txt', 'r', encoding='utf-8')
 
     count = 0
     correct = 0
@@ -70,11 +70,11 @@ def mentioin_main():
 
 def hmm_main():
 
-    HMMFactory = hmm.util.HMMFactory(menu_path + 'train.txt')
+    HMMFactory = hmm.util.HMMFactory(menu_path + 'train_labeled.txt')
     model = buildHMM(HMMFactory)
 
     # diff_file = open(menu_path + 'diff.txt', 'w', encoding='utf-8')
-    test_file = open(menu_path + 'test.txt', 'r', encoding='utf-8')
+    test_file = open(menu_path + 'test_labeled.txt', 'r', encoding='utf-8')
 
     count = 0
     correct = 0
@@ -108,7 +108,7 @@ def crf_main():
     global punctuation_pattern
 
     metric = CRFMetric()
-    count, correct = metric.punctuation_accuracy('crf/output.txt', punctuation_pattern)
+    count, correct = metric.punctuation_accuracy('crf/output.txt.new', punctuation_pattern)
     print('CRF:', count, correct, correct / float(count))
 
 if __name__ == '__main__':
