@@ -107,8 +107,13 @@ def hmm_main():
 def crf_main():
     global punctuation_pattern
 
+    crf_path = 'crf\\CRF++-0.54\\'
+    crf_data_path = crf_path + 'example\\valueSeg\\'
+    os.system('{}crf_learn -a MIRA {}template {}train.data model'.format(crf_path, crf_data_path, crf_data_path))
+    os.system('{}crf_test -m model {}test.data > crf\\output.txt'.format(crf_path, crf_data_path))
+
     metric = CRFMetric()
-    count, correct = metric.punctuation_accuracy('crf/output.txt.new', punctuation_pattern)
+    count, correct = metric.punctuation_accuracy('crf\\output.txt', punctuation_pattern)
     print('CRF:', count, correct, correct / float(count))
 
 if __name__ == '__main__':
