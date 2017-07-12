@@ -26,11 +26,9 @@ class CRFMetric(object):
         return correct / float(count)
 
     @staticmethod
-    def punctuation_accuracy(filepath):
+    def punctuation_accuracy(filepath, punctuation_pattern):
         correct = 0
         count = 0
-
-        punctuation_pattern = re.compile(r'[/、,，;；|]')
 
         with open(filepath, 'r', encoding='utf-8') as input_file:
 
@@ -46,6 +44,6 @@ class CRFMetric(object):
                     label, predict = data_tuple[-2:]
                     if label == predict:
                         correct += 1
-        return correct / float(count)
+        return count, correct
 
 
