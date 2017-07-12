@@ -10,23 +10,6 @@ from crf.CRFMetric import CRFMetric
 menu_path = 'hmm/'
 punctuation_pattern = re.compile(r'[/、,，;；|]')
 
-def eval_seg(predict, gold):
-    wc_predict = 0
-    wc_correct = 0
-    wc_gold = 0
-    for i in range(len(predict)):
-        if predict[i] == '|':
-            wc_predict += 1
-            if gold[i] == '|':
-                wc_correct += 1
-        else:
-            if gold[i] == '|':
-                wc_gold += 1
-
-
-    return wc_predict, wc_gold, wc_correct
-
-
 def base_main():
     global punctuation_pattern
 
