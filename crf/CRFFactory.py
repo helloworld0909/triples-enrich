@@ -36,6 +36,8 @@ class CRFFactory(object):
                     word_segment_tag, word_nominal_tag = self.get_word_segment_nominal_tag(before_segment)
                     segment_tag = self.get_segment_tag(after_segment)
 
+                    # CRF++不把空格当做字符，需要替换掉
+                    before_segment = re.sub(' ', '□', before_segment)
                     all_tags = [before_segment, mention_tag, word_segment_tag, word_nominal_tag, segment_tag]
 
                     for i in range(len(before_segment)):
