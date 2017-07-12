@@ -98,7 +98,7 @@ class CRFFactory(object):
         for w in posseg.cut(value):
             tag_list = self.get_word_segment_tag(w.word)
             word_segment_tag.extend(tag_list)
-            word_nominal_tag.extend(self.add_flag(tag_list, w.flag))
+            word_nominal_tag.extend(self.get_flag(tag_list, w.flag))
 
         assert len(word_segment_tag) == len(value), 'Segment_tag error: ' + value
         assert len(word_nominal_tag) == len(value), 'Nominal_tag error: ' + value
@@ -121,6 +121,10 @@ class CRFFactory(object):
             return tag_list
 
     @staticmethod
+    def get_flag(tag_list, flag):
+        return [flag] * len(tag_list)
+
+    @staticmethod
     def add_flag(tag_list, flag):
         return list(map(lambda t: t + '-' + flag, tag_list))
 
@@ -138,4 +142,5 @@ class CRFFactory(object):
 if __name__ == '__main__':
 
     crfFactory = CRFFactory()
-    crfFactory.build('E:\\python_workspace\\enrich\\output\\train.data')
+    crfFactory.build('E:\\python_workspace\\enrich\\output\\train_labeled.txt', output='train.data')
+    crfFactory.build('E:\\python_workspace\\enrich\\output\\test_labeled.txt', output='test.data')
