@@ -29,6 +29,24 @@ def load_data(filename):
 
     return X, Y
 
+def load_property(filename):
+    X = []
+    names = []
+
+    with open(filename, 'r', encoding='utf-8') as input_file:
+        for line in input_file:
+            name, _, split_count, split_rate = line.strip().split('\t')
+
+            split_count = int(split_count)
+            split_rate = float(split_rate)
+
+            X.append(np.array((split_rate, split_count), dtype='float32'))
+            names.append(name)
+
+    X = scale(X)
+
+    return X, names
+
 def load_char_feature(filename, char_dict):
     X = []
     code_dim = len(char_dict) + 1   # For Unknown char
@@ -126,6 +144,37 @@ def rate_count_twogram(twogram_dict):
 
     LR(X, Y)
 
+def dump_multivalued_property():
+
+    property_file = 'properties.txt'
+
+    full_char_dict = encode_char(property_file, threshold=4)
+
+    X1_train, Y_train = load_data(filepath)
+    X2_train = load_char_feature(filepath, full_char_dict)
+
+    X_train = []
+    for x1, x2 in zip(X1_train, X2_train):
+        X_train.append(np.concatenate((x1, x2)))
+
+    lr = LogisticRegression()
+    lr.fit(X_train, Y_train)
+
+    X1, names = load_property(property_file)
+    X2 = load_char_feature(property_file, full_char_dict)
+
+    X = []
+    for x1, x2 in zip(X1, X2):
+        X.append(np.concatenate((x1, x2)))
+
+
+    predict = lr.predict(X)
+    with open('multivalued_property.txt', 'w', encoding='utf-8') as output_file:
+        for i in range(len(names)):
+            if predict[i]:
+                output_file.write(names[i] + '\n')
+
+
 def rate_count():
 
     X1, Y = load_data(filepath)
@@ -165,3 +214,6 @@ if __name__ == '__main__':
 
     print('rate_count_twogram')
     rate_count_twogram(twogram_dict)
+
+    dump_multivalued_property()
+
