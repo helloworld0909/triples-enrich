@@ -30,7 +30,7 @@ class HMMFactory(object):
     def wordcount(self):
         wordcount = defaultdict(int)
         for line in self.input_file:
-            raw_value = line.strip().split('\t')[0]
+            raw_value = line.strip().split('\t')[-2]
             for c in raw_value:
                 wordcount[c] += 1
         return wordcount
@@ -38,7 +38,7 @@ class HMMFactory(object):
     def hiddenProb(self):
         probVector = [0.0]*2
         for line in self.input_file:
-            split_value = line.strip().split('\t')[1]
+            split_value = line.strip().split('\t')[-1]
             count = self.count_split(split_value)
             probVector[1] += count
             probVector[0] += len(split_value) - count
@@ -57,7 +57,7 @@ class HMMFactory(object):
     def transMatrix(self):
         matrix = [[0.0, 0.0], [0.0, 0.0]]
         for line in self.input_file:
-            raw_value, split_value = line.strip().split('\t')
+            raw_value, split_value = line.strip().split('\t')[-2], line.strip().split('\t')[-1]
 
             n_split = self.count_split(split_value)
             matrix[0][1] += n_split
@@ -82,7 +82,7 @@ class HMMFactory(object):
     def emissionMatrix(self):
         matrix = [[0.0]*self.n_word, [0.0]*self.n_word]
         for line in self.input_file:
-            raw_value, split_value = line.strip().split('\t')
+            raw_value, split_value = line.strip().split('\t')[-2], line.strip().split('\t')[-1]
 
             if len(split_value) != len(raw_value):
                 continue
