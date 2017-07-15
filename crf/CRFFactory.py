@@ -8,10 +8,13 @@ class CRFFactory(object):
 
     menu_path = "E:\\python_workspace\\enrich\\"
     mention_path = menu_path + "middleware\\mention_list.txt"
+    multivalued_path = menu_path + "middleware\\multivalued_attribute_list.txt"
 
     def __init__(self):
         self.mention_set = set()
+        self.multivalued_set = set()
         self.load_mention_set()
+        self.load_multivalued_set()
         self.punctuation_pattern = re.compile(r'[/、,，;；|]')
 
     def load_mention_set(self):
@@ -21,12 +24,18 @@ class CRFFactory(object):
                 line = line.strip()
                 self.mention_set.add(line)
 
+    def load_multivalued_set(self):
+        with open(self.multivalued_path, 'r', encoding="utf-8") as input_file:
+            for line in input_file:
+                line = line.strip()
+                self.multivalued_set.add(line)
+
     def build(self, filepath, output='train.data'):
         error_count = 0
         with open(filepath, 'r', encoding='utf-8') as input_file:
             with open(output, 'w', encoding='utf-8') as output_file:
                 for line in input_file:
-                    before_segment, after_segment = line.strip().split('\t')
+                    attribute, before_segment, after_segment = line.strip().split('\t')
 
                     if len(before_segment) != len(after_segment):
                         error_count += 1
@@ -35,10 +44,18 @@ class CRFFactory(object):
                     mention_tag = self.get_mention_tag(before_segment)
                     word_segment_tag, word_nominal_tag = self.get_word_segment_nominal_tag(before_segment)
                     segment_tag = self.get_segment_tag(after_segment)
+                    meta_tag = self.get_meta_tag(attribute, before_segment)
 
                     # CRF++不把空格当做字符，需要替换掉
                     before_segment = before_segment.replace(' ', '□')
-                    all_tags = [before_segment, mention_tag, word_segment_tag, word_nominal_tag, segment_tag]
+                    all_tags = [
+                        before_segment,
+                        mention_tag,
+                        word_segment_tag,
+                        word_nominal_tag,
+                        meta_tag,
+                        segment_tag
+                    ]
 
                     for i in range(len(before_segment)):
                         tags = map(lambda l:l[i], all_tags)
@@ -140,9 +157,14 @@ class CRFFactory(object):
                 segment_tag.append('O')
         return segment_tag
 
+    def get_meta_tag(self, attribute, value):
+        if attribute in self.multivalued_set:
+            return ['I'] * len(value)
+        else:
+            return ['O'] * len(value)
 
 if __name__ == '__main__':
 
     crfFactory = CRFFactory()
-    crfFactory.build('E:\\python_workspace\\enrich\\output\\train_labeled.txt', output='train.data')
-    crfFactory.build('E:\\python_workspace\\enrich\\output\\test_labeled.txt', output='test.data')
+    crfFactory.build('E:\\python_workspace\\enrich\\input\\train_labeled_with_attribute.txt', output='train.data')
+    crfFactory.build('E:\\python_workspace\\enrich\\input\\test_labeled_with_attribute.txt', output='test.data')
