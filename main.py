@@ -7,18 +7,18 @@ from hmm.hmm import buildHMM
 import hmm.util
 from crf.CRFMetric import CRFMetric
 
-menu_path = 'E:\\python_workspace\\enrich\\output\\'
+menu_path = 'E:\\python_workspace\\enrich\\input\\'
 punctuation_pattern = re.compile(r'[/、,，;；|]')
 
 def base_main():
     global punctuation_pattern
 
-    test_file = open(menu_path + 'test_labeled.txt', 'r', encoding='utf-8')
+    test_file = open(menu_path + 'test_labeled_with_attribute.txt', 'r', encoding='utf-8')
 
     count = 0
     correct = 0
     for line in test_file:
-        raw_value, split_value = line.strip().split('\t')
+        _, raw_value, split_value = line.strip().split('\t')
         predict_value = re.sub(punctuation_pattern, '|', raw_value)
 
         for raw, label, predict in zip(raw_value, split_value, predict_value):
@@ -35,13 +35,13 @@ def mentioin_main():
     global punctuation_pattern
 
     model = INFOBOX_ENRICH()
-    test_file = open(menu_path + 'test_labeled.txt', 'r', encoding='utf-8')
+    test_file = open(menu_path + 'test_labeled_with_attribute.txt', 'r', encoding='utf-8')
 
     count = 0
     correct = 0
     error_count = 0
     for line in test_file:
-        raw_value, split_value = line.strip().split('\t')
+        _, raw_value, split_value = line.strip().split('\t')
 
         predict = model.enrich_infobox_value_segment(raw_value)
         predict_value = '|'.join(predict)
@@ -70,17 +70,17 @@ def mentioin_main():
 
 def hmm_main():
 
-    HMMFactory = hmm.util.HMMFactory(menu_path + 'train_labeled.txt')
+    HMMFactory = hmm.util.HMMFactory(menu_path + 'train_labeled_with_attribute.txt')
     model = buildHMM(HMMFactory)
 
     # diff_file = open(menu_path + 'diff.txt', 'w', encoding='utf-8')
-    test_file = open(menu_path + 'test_labeled.txt', 'r', encoding='utf-8')
+    test_file = open(menu_path + 'test_labeled_with_attribute.txt', 'r', encoding='utf-8')
 
     count = 0
     correct = 0
     error_count = 0
     for line in test_file:
-        raw_value, split_value = line.strip().split('\t')
+        _, raw_value, split_value = line.strip().split('\t')
 
         Y = hmm.util.encode_state(split_value)
 
