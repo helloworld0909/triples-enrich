@@ -36,7 +36,7 @@ def base_main():
     test_file.close()
 
 
-def mentioin_main():
+def mention_main():
     global punctuation_pattern
 
     model = INFOBOX_ENRICH()
@@ -125,6 +125,6 @@ def crf_main():
 
 if __name__ == '__main__':
     base_main()
-    mentioin_main()
+    mention_main()
     hmm_main()
     crf_main()
