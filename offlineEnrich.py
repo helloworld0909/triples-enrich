@@ -34,9 +34,9 @@ class INFOBOX_ENRICH:
         self.load_date_attribute_set()
         self.load_mention_set()
 
-        self.stat_property = defaultdict(lambda : [0, 0])   #第一个代表属性出现次数，第二个表示这个属性的值被分割的次数
-        # self.split_case = dict()
-        # self.special_case = dict()
+        # self.stat_property = defaultdict(lambda : [0, 0])   #第一个代表属性出现次数，第二个表示这个属性的值被分割的次数
+        self.split_case = dict()
+        self.special_case = dict()
 
 
 
@@ -144,7 +144,7 @@ class INFOBOX_ENRICH:
 
 
 
-    def split_one_value(self, one_value):
+    def split_one_value(self, p, one_value):
         punctuation_pattern = re.compile(r'[/、,，;；|]')
 
         r1 = re.findall(punctuation_pattern, one_value)
@@ -160,21 +160,21 @@ class INFOBOX_ENRICH:
             if score > base_score:
                 base_score = score
                 current_mention_list = mention_list
-                # if split_word == '/':
-                #     self.special_case[one_value] = tuple(current_mention_list)
+                if split_word == '/':
+                    self.special_case[one_value] = p, tuple(current_mention_list)
 
-        # if re.search(punctuation_pattern, one_value) is not None:
-        #     self.split_case[one_value] = tuple(current_mention_list)
+        if re.search(punctuation_pattern, one_value) is not None:
+            self.split_case[one_value] = p, tuple(current_mention_list)
 
         return current_mention_list
 
-    def enrich_infobox_value_segment(self, o):
+    def enrich_infobox_value_segment(self, p, o):
         split_o_list = list()
 
         o = self.value_preprocess(o)
 
         for split_o in o.split("|||"):
-            value_list = self.split_one_value(split_o)
+            value_list = self.split_one_value(p, split_o)
             value_list = list(filter(lambda s: s and s.strip(), value_list))    # Remove blank character and ''
             if len(value_list) == 1:
                 split_o_list.append(split_o)
@@ -194,19 +194,22 @@ class INFOBOX_ENRICH:
 
         o2 = self.enrich_infobox_date_normalize(p1, o)
 
-        o3_list = self.enrich_infobox_value_segment(o2)
+        o3_list = self.enrich_infobox_value_segment(p1, o2)
 
         return p1, o3_list
 
     def run(self, infobox_path, enrich_infobox_path):
-        enrich_infobox_file = open(enrich_infobox_path, 'w', encoding = "utf-8")
+        # enrich_infobox_file = open(enrich_infobox_path, 'w', encoding = "utf-8")
 
         count = 0
         with open(infobox_path, 'r', encoding = "utf-8") as f1:
             for line1 in f1:
                 count += 1
-                if count % 100000 == 0:
-                    print(count, time.ctime())
+                if count % 999 != 0 or count % 1000 == 0:
+                    continue
+                else:
+                    if count % 999000 == 0:
+                        print(count, time.ctime())
 
 
                 try:
@@ -217,7 +220,7 @@ class INFOBOX_ENRICH:
                     o = words1[2]
 
                     if p == "CATEGORY_ZH" or p == "DESC" or p == "中文名":
-                        enrich_infobox_file.write(s + "\t" + p + "\t" + o + "\n")
+                        # enrich_infobox_file.write(s + "\t" + p + "\t" + o + "\n")
                         continue
 
                     o = self.replace_olddata_label(o)
@@ -229,16 +232,16 @@ class INFOBOX_ENRICH:
                     for newo in new_o_list:
                         if newo == "" or newo == None: continue
                         if newo in self.mention_set: newo = "<a>" + newo + "</a>"
-                        enrich_infobox_file.write(s + "\t" + newp + "\t" + newo + "\n")
+                        # enrich_infobox_file.write(s + "\t" + newp + "\t" + newo + "\n")
 
-                    self.stat_property[p][0] += 1
-                    if len(new_o_list) > 1:
-                        self.stat_property[p][1] += 1
+                    # self.stat_property[p][0] += 1
+                    # if len(new_o_list) > 1:
+                    #     self.stat_property[p][1] += 1
 
                 except Exception as e:
                     print("error", line1, str(e))
-        self.stat_output()
-        # self.other_output()
+        # self.stat_output()
+        self.other_output()
 
     def stat_output(self):
         with open('stat.txt', 'w', encoding='utf-8') as stat_file:
@@ -248,13 +251,13 @@ class INFOBOX_ENRICH:
     def other_output(self):
         with open('train.txt', 'w', encoding='utf-8') as split_file:
             for o, split_case in self.split_case.items():
-                split_file.write(o + '\t' + '|'.join(split_case) + '\n')
+                split_file.write(split_case[0] + '\t' + o + '\t' + '|'.join(split_case[1]) + '\n')
         with open('split_by_slash.txt', 'w', encoding='utf-8') as special_file:
             for o, split_case in self.special_case.items():
-                special_file.write(o + '\t' + '|'.join(split_case) + '\n')
+                special_file.write(split_case[0] + '\t' + o + '\t' + '|'.join(split_case[1]) + '\n')
 
 if __name__ == "__main__":
-    infobox_path = "infobox_testdata_enrich1.txt"
+    infobox_path = "external_enrich_triples.txt"
     enrich_infobox_path = "enrich_triples.txt"
 
     INFOBOX_ENRICH().run(infobox_path, enrich_infobox_path)

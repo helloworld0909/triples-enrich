@@ -10,10 +10,14 @@ from crf.CRFMetric import CRFMetric
 menu_path = 'E:\\python_workspace\\enrich\\input\\'
 punctuation_pattern = re.compile(r'[/、,，;；|]')
 
+train_data = 'train_labeled_with_attribute.txt'
+test_data = 'test_labeled_with_attribute_1.txt'
+
+
 def base_main():
     global punctuation_pattern
 
-    test_file = open(menu_path + 'test_labeled_with_attribute.txt', 'r', encoding='utf-8')
+    test_file = open(menu_path + test_data, 'r', encoding='utf-8')
 
     count = 0
     correct = 0
@@ -31,19 +35,20 @@ def base_main():
 
     test_file.close()
 
+
 def mentioin_main():
     global punctuation_pattern
 
     model = INFOBOX_ENRICH()
-    test_file = open(menu_path + 'test_labeled_with_attribute.txt', 'r', encoding='utf-8')
+    test_file = open(menu_path + test_data, 'r', encoding='utf-8')
 
     count = 0
     correct = 0
     error_count = 0
     for line in test_file:
-        _, raw_value, split_value = line.strip().split('\t')
+        p, raw_value, split_value = line.strip().split('\t')
 
-        predict = model.enrich_infobox_value_segment(raw_value)
+        predict = model.enrich_infobox_value_segment(p, raw_value)
         predict_value = '|'.join(predict)
 
         # 和offlineEnrich的操作保持一致，先排序
@@ -68,13 +73,13 @@ def mentioin_main():
 
     test_file.close()
 
-def hmm_main():
 
-    HMMFactory = hmm.util.HMMFactory(menu_path + 'train_labeled_with_attribute.txt')
+def hmm_main():
+    HMMFactory = hmm.util.HMMFactory(menu_path + train_data)
     model = buildHMM(HMMFactory)
 
     # diff_file = open(menu_path + 'diff.txt', 'w', encoding='utf-8')
-    test_file = open(menu_path + 'test_labeled_with_attribute.txt', 'r', encoding='utf-8')
+    test_file = open(menu_path + test_data, 'r', encoding='utf-8')
 
     count = 0
     correct = 0
@@ -104,17 +109,19 @@ def hmm_main():
 
     test_file.close()
 
+
 def crf_main():
     global punctuation_pattern
 
     crf_path = 'crf\\CRF++-0.54\\'
     crf_data_path = crf_path + 'example\\valueSeg\\'
-    os.system('{}crf_learn -a MIRA {}template {}train.data model'.format(crf_path, crf_data_path, crf_data_path))
-    os.system('{}crf_test -m model {}test.data > crf\\output.txt'.format(crf_path, crf_data_path))
+    os.system('{}crf_learn -a MIRA {}template {}train.data crf\\model'.format(crf_path, crf_data_path, crf_data_path))
+    os.system('{}crf_test -m model {}test1.data > crf\\output.txt'.format(crf_path, crf_data_path))
 
     metric = CRFMetric()
     count, correct = metric.punctuation_accuracy('crf\\output.txt', punctuation_pattern)
     print('CRF:', count, correct, correct / float(count))
+
 
 if __name__ == '__main__':
     base_main()

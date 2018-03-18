@@ -4,8 +4,8 @@ import re
 
 logging.basicConfig(level=logging.INFO)
 
-class CRFFactory(object):
 
+class CRFFactory(object):
     menu_path = "E:\\python_workspace\\enrich\\"
     mention_path = menu_path + "middleware\\mention_list.txt"
     multivalued_path = menu_path + "middleware\\multivalued_attribute_list.txt"
@@ -19,7 +19,7 @@ class CRFFactory(object):
 
     def load_mention_set(self):
 
-        with open(self.mention_path, 'r', encoding = "utf-8") as input_file:
+        with open(self.mention_path, 'r', encoding="utf-8") as input_file:
             for line in input_file:
                 line = line.strip()
                 self.mention_set.add(line)
@@ -58,12 +58,11 @@ class CRFFactory(object):
                     ]
 
                     for i in range(len(before_segment)):
-                        tags = map(lambda l:l[i], all_tags)
+                        tags = map(lambda l: l[i], all_tags)
                         output_file.write('\t'.join(tags) + '\n')
 
                     output_file.write('\n')
         logging.info('Finished. Found {} error lines'.format(error_count))
-
 
     def get_mention_tag(self, value):
         length = len(value)
@@ -81,13 +80,14 @@ class CRFFactory(object):
             tag_list, num_mention = self.transform_mention(word_list)
             logging.debug(tag_list)
 
-            mention_tag = sum(self.join_mention(tag_list), [])  #Join tag_list with 'MO', and then flatten it
+            mention_tag = sum(self.join_mention(tag_list), [])  # Join tag_list with 'MO', and then flatten it
 
             score = 2 * num_mention - len(tag_list)
             mention_tag_candidates.append((mention_tag, score))
 
-        most_likely_mention_tag = max(mention_tag_candidates, key=lambda c:c[1])[0]    #取score最高的那一种分法作为标注
-        assert len(most_likely_mention_tag) == length, 'Mention_tag error: ' + value + '\t' + str(most_likely_mention_tag)
+        most_likely_mention_tag = max(mention_tag_candidates, key=lambda c: c[1])[0]  # 取score最高的那一种分法作为标注
+        assert len(most_likely_mention_tag) == length, 'Mention_tag error: ' + value + '\t' + str(
+            most_likely_mention_tag)
 
         return most_likely_mention_tag
 
@@ -97,7 +97,7 @@ class CRFFactory(object):
         for word in word_list:
             if not word:
                 tag_list.append([])
-            elif word.strip() in self.mention_set:    #去两端空格再找mention
+            elif word.strip() in self.mention_set:  # 去两端空格再找mention
                 tag_list.append(['MB'] + ['MI'] * (len(word) - 1))
                 num_mention += 1
             else:
@@ -123,7 +123,6 @@ class CRFFactory(object):
         assert len(word_nominal_tag) == len(value), 'Nominal_tag error: ' + value
 
         return word_segment_tag, word_nominal_tag
-
 
     @staticmethod
     def get_word_segment_tag(word):
@@ -163,8 +162,8 @@ class CRFFactory(object):
         else:
             return ['O'] * len(value)
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     crfFactory = CRFFactory()
-    crfFactory.build('E:\\python_workspace\\enrich\\input\\train_labeled_with_attribute.txt', output='train.data')
-    crfFactory.build('E:\\python_workspace\\enrich\\input\\test_labeled_with_attribute.txt', output='test.data')
+    # crfFactory.build('E:\\python_workspace\\enrich\\input\\train_labeled_with_attribute.txt', output='train.data')
+    crfFactory.build('E:\\python_workspace\\enrich\\input\\test_labeled_with_attribute_1.txt', output='test.data')
