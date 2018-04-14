@@ -2,12 +2,14 @@ from collections import defaultdict
 import time
 
 infobox_path = 'enrich_triples.txt'
-stat_property = defaultdict(lambda : [0, 0])   #第一个代表属性出现次数，第二个表示这个属性的值被分割的次数
+stat_property = defaultdict(lambda: [0, 0])  # 第一个代表属性出现次数，第二个表示这个属性的值被分割的次数
+
 
 def stat_output():
     with open('stat.txt', 'w', encoding='utf-8') as stat_file:
-        for p, stats in sorted(stat_property.items(), key=lambda a:a[1][0], reverse=True):
+        for p, stats in sorted(stat_property.items(), key=lambda a: a[1][0], reverse=True):
             stat_file.write(p + '\t' + str(stats[0]) + '\t' + str(stats[1]) + '\n')
+
 
 if __name__ == '__main__':
 

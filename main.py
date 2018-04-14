@@ -116,7 +116,7 @@ def crf_main():
     crf_path = 'crf\\CRF++-0.54\\'
     crf_data_path = crf_path + 'example\\valueSeg\\'
     os.system('{}crf_learn -a MIRA {}template {}train.data crf\\model'.format(crf_path, crf_data_path, crf_data_path))
-    os.system('{}crf_test -m model {}test1.data > crf\\output.txt'.format(crf_path, crf_data_path))
+    os.system('{}crf_test -m crf\\model {}test1.data > crf\\output.txt'.format(crf_path, crf_data_path))
 
     metric = CRFMetric()
     count, correct = metric.punctuation_accuracy('crf\\output.txt', punctuation_pattern)
