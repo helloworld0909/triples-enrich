@@ -1,4 +1,4 @@
-#-*- coding:UTF-8 -*-
+# -*- coding:UTF-8 -*-
 '''
 Created on 2017-4-27
 
@@ -15,9 +15,8 @@ from convert2Date import CONVERT_DATE
 import time
 from collections import defaultdict
 
+
 class INFOBOX_ENRICH:
-
-
     menu_path = ""
     attribute_match_path = menu_path + "middleware\\similar_attribute_pair_human.txt"
     date_attribute_path = menu_path + "middleware\\date_attribute_list.txt"
@@ -28,7 +27,6 @@ class INFOBOX_ENRICH:
     mention_set = None
     punctuation_list = [' ', '/', '、', ',', '，', ';', '；', '|']
 
-
     def __init__(self):
         self.load_mention_2_attribute_dict()
         self.load_date_attribute_set()
@@ -38,11 +36,9 @@ class INFOBOX_ENRICH:
         self.split_case = dict()
         self.special_case = dict()
 
-
-
     def load_mention_2_attribute_dict(self):
         self.mention_2_attribute_dict = dict()
-        with open(self.attribute_match_path, 'r', encoding = "utf-8") as f1:
+        with open(self.attribute_match_path, 'r', encoding="utf-8") as f1:
             for line1 in f1:
                 line1 = line1.rstrip()
                 words1 = line1.split("\t")
@@ -55,7 +51,7 @@ class INFOBOX_ENRICH:
 
     def load_date_attribute_set(self):
         self.date_attribute_set = set()
-        with open(self.date_attribute_path, 'r', encoding = "utf-8") as f1:
+        with open(self.date_attribute_path, 'r', encoding="utf-8") as f1:
             for line1 in f1:
                 line1 = line1.rstrip()
                 self.date_attribute_set.add(line1)
@@ -63,7 +59,7 @@ class INFOBOX_ENRICH:
 
     def load_mention_set(self):
         self.mention_set = set()
-        with open(self.mention_path, 'r', encoding = "utf-8") as f1:
+        with open(self.mention_path, 'r', encoding="utf-8") as f1:
             for line1 in f1:
                 line1 = line1.rstrip()
                 self.mention_set.add(line1)
@@ -86,7 +82,6 @@ class INFOBOX_ENRICH:
 
             return newo
 
-
     def replace_olddata_label(self, z):
         z = str(z).strip().replace('\xa0', '').replace('&nbsp;', ' ')
         z = re.sub('[\r\n\t]', '', z)
@@ -105,13 +100,13 @@ class INFOBOX_ENRICH:
         pattern4 = re.compile(r'^《([^《》]*)》$')
 
         value_string = value_string.strip()
-        value_string = value_string.replace("&quot;", '"').replace("&amp;", '&').replace("&lt;", '<').replace("&gt;", '>')
-        value_string = re.sub(pattern1,r'\1', value_string)
-        value_string = re.sub(pattern3,r'\1', value_string)
-        value_string = re.sub(pattern4,r'\1', value_string)
+        value_string = value_string.replace("&quot;", '"').replace("&amp;", '&').replace("&lt;", '<').replace("&gt;",
+                                                                                                              '>')
+        value_string = re.sub(pattern1, r'\1', value_string)
+        value_string = re.sub(pattern3, r'\1', value_string)
+        value_string = re.sub(pattern4, r'\1', value_string)
 
         return value_string
-
 
     def check_mentions(self, word_list):
         score = 0
@@ -119,30 +114,26 @@ class INFOBOX_ENRICH:
 
         end_word = word_list[-1]
 
-
         if end_word.endswith("等"):
             if end_word not in self.mention_set and end_word[:-1] in self.mention_set:
                 end_word = end_word[:-1]
 
         if end_word in self.mention_set:
-            score +=1
+            score += 1
         else:
-            score -=1
-
+            score -= 1
 
         for word in word_list[:-1]:
             mention_list.append(word)
 
             if word in self.mention_set:
-                score +=1
+                score += 1
             else:
-                score -=1
+                score -= 1
 
         mention_list.append(end_word)
 
         return score, mention_list
-
-
 
     def split_one_value(self, p, one_value):
         punctuation_pattern = re.compile(r'[/、,，;；|]')
@@ -175,7 +166,7 @@ class INFOBOX_ENRICH:
 
         for split_o in o.split("|||"):
             value_list = self.split_one_value(p, split_o)
-            value_list = list(filter(lambda s: s and s.strip(), value_list))    # Remove blank character and ''
+            value_list = list(filter(lambda s: s and s.strip(), value_list))  # Remove blank character and ''
             if len(value_list) == 1:
                 split_o_list.append(split_o)
                 continue
@@ -186,7 +177,6 @@ class INFOBOX_ENRICH:
         split_o_list = sorted(list(set(split_o_list)))
 
         return split_o_list
-
 
     def process_one_pair(self, p, o):
 
@@ -202,7 +192,7 @@ class INFOBOX_ENRICH:
         # enrich_infobox_file = open(enrich_infobox_path, 'w', encoding = "utf-8")
 
         count = 0
-        with open(infobox_path, 'r', encoding = "utf-8") as f1:
+        with open(infobox_path, 'r', encoding="utf-8") as f1:
             for line1 in f1:
                 count += 1
                 if count % 999 != 0 or count % 1000 == 0:
@@ -210,7 +200,6 @@ class INFOBOX_ENRICH:
                 else:
                     if count % 999000 == 0:
                         print(count, time.ctime())
-
 
                 try:
                     line1 = line1.rstrip()
@@ -245,7 +234,7 @@ class INFOBOX_ENRICH:
 
     def stat_output(self):
         with open('stat.txt', 'w', encoding='utf-8') as stat_file:
-            for p, stats in sorted(self.stat_property.items(), key=lambda a:a[1][0], reverse=True):
+            for p, stats in sorted(self.stat_property.items(), key=lambda a: a[1][0], reverse=True):
                 stat_file.write(p + '\t' + str(stats[0]) + '\t' + str(stats[1]) + '\n')
 
     def other_output(self):
@@ -255,6 +244,7 @@ class INFOBOX_ENRICH:
         with open('split_by_slash.txt', 'w', encoding='utf-8') as special_file:
             for o, split_case in self.special_case.items():
                 special_file.write(split_case[0] + '\t' + o + '\t' + '|'.join(split_case[1]) + '\n')
+
 
 if __name__ == "__main__":
     infobox_path = "external_enrich_triples.txt"
