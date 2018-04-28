@@ -14,6 +14,7 @@ import re
 from convert2Date import CONVERT_DATE
 import time
 from collections import defaultdict
+import json
 
 
 class INFOBOX_ENRICH:
@@ -135,12 +136,12 @@ class INFOBOX_ENRICH:
 
         return score, mention_list
 
-    def split_one_value(self, p, one_value):
+    def split_one_value(self, p, one_value, threshold=1.1):
         punctuation_pattern = re.compile(r'[/、,，;；|]')
 
         r1 = re.findall(punctuation_pattern, one_value)
 
-        base_score = 1.1
+        base_score = threshold
         current_mention_list = [one_value]
 
         if r1 is None: return current_mention_list
@@ -148,15 +149,16 @@ class INFOBOX_ENRICH:
         for split_word in set(r1):
             word_list = one_value.split(split_word)
             score, mention_list = self.check_mentions(word_list)
+            if base_score < 0:
+                base_score = len(mention_list) - 1
             if score > base_score:
                 base_score = score
                 current_mention_list = mention_list
                 if split_word == '/':
                     self.special_case[one_value] = p, tuple(current_mention_list)
 
-        if re.search(punctuation_pattern, one_value) is not None:
-            self.split_case[one_value] = p, tuple(current_mention_list)
-
+        # if re.search(punctuation_pattern, one_value) is not None:
+        #     self.split_case[one_value] = p, tuple(current_mention_list)
         return current_mention_list
 
     def enrich_infobox_value_segment(self, p, o):
@@ -174,7 +176,7 @@ class INFOBOX_ENRICH:
                 if v in self.punctuation_list: continue
                 split_o_list.append(v)
 
-        split_o_list = sorted(list(set(split_o_list)))
+        # split_o_list = sorted(list(set(split_o_list)))
 
         return split_o_list
 
@@ -245,9 +247,44 @@ class INFOBOX_ENRICH:
             for o, split_case in self.special_case.items():
                 special_file.write(split_case[0] + '\t' + o + '\t' + '|'.join(split_case[1]) + '\n')
 
+    def build_new_data(self, infobox_path):
+        property_label = {}
+        with open('classifier/property.txt', 'r', encoding='utf-8') as fin:
+            for line in fin:
+                line = line.strip().split('\t')
+                p = line[0]
+                label = line[-1]
+                property_label[p] = label
+
+        print('Finish property label, count %s' % len(property_label))
+
+        value_groupby_property = defaultdict(list)
+        punctuation_pattern = re.compile(r'[/、,，;；|]')
+        with open(infobox_path, 'r', encoding="utf-8") as fin:
+            for count, line in enumerate(fin):
+                if count % 100000 == 0:
+                    print(count)
+                try:
+                    line = line.rstrip()
+                    words = line.split("\t")
+                    s, p, o = words
+                    if p == "CATEGORY_ZH" or p == "DESC" or p == "中文名" or p not in property_label:
+                        continue
+                    o = self.replace_olddata_label(o)
+                    for one_value in o.split('|||'):
+                        one_value = self.value_preprocess(one_value)
+                        value_groupby_property[p].append(one_value)
+
+                except Exception as e:
+                    print("error", line, str(e))
+
+        with open("value_groupby_property.json", 'w', encoding='utf-8') as fout:
+            json.dump(value_groupby_property, fout, indent=1, ensure_ascii=False, sort_keys=True)
+
 
 if __name__ == "__main__":
-    infobox_path = "external_enrich_triples.txt"
+    infobox_path = "infobox_testdata_enrich1.txt"
     enrich_infobox_path = "enrich_triples.txt"
 
-    INFOBOX_ENRICH().run(infobox_path, enrich_infobox_path)
+    # INFOBOX_ENRICH().run(infobox_path, enrich_infobox_path)
+    INFOBOX_ENRICH().build_new_data(infobox_path)
