@@ -5,10 +5,8 @@ from keras.preprocessing.sequence import pad_sequences
 maxAttrLen = 10
 maxValueLen = 30
 
-filename = 'iter_0.json'
 
-
-def init_word2idx():
+def init_word2idx(filename='all_data.json'):
     with open(filename, 'r', encoding='utf-8') as input_file:
         data = json.load(input_file)
 
@@ -27,7 +25,7 @@ def init_word2idx():
     return attr_word2idx, value_word2idx
 
 
-def init_sequences(attr_word2idx, value_word2idx):
+def init_sequences(filename, attr_word2idx, value_word2idx):
     with open(filename, 'r', encoding='utf-8') as input_file:
         data = json.load(input_file)
 
@@ -67,4 +65,4 @@ def init_sequences(attr_word2idx, value_word2idx):
 
 if __name__ == '__main__':
     attr_word2idx, value_word2idx = init_word2idx()
-    print(init_sequences(attr_word2idx, value_word2idx))
+    print(init_sequences('iter0.json', attr_word2idx, value_word2idx))

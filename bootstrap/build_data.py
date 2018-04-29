@@ -1,4 +1,5 @@
 import json
+import random
 import offlineEnrich
 
 
@@ -25,12 +26,12 @@ def main():
         jsonObj = json.load(fin)
 
     model = offlineEnrich.INFOBOX_ENRICH()
-    model.menu_path = "..\\"
 
     transform = {}
+    transform_test = {}
     count = 0
     for attr, values in jsonObj.items():
-        if count % 1000 == 0:
+        if count % 100 == 0:
             print(count)
         body = {'isMulti': property_label[attr]}
         value_list = {}
@@ -39,11 +40,16 @@ def main():
             indices = split_indices(mention_list)
             value_list[value] = indices
         body['values'] = value_list
-        transform[attr] = body
+        if random.random() < 0.9:
+            transform[attr] = body
+        else:
+            transform_test[attr] = body
         count += 1
 
     with open("iter_0.json", 'w', encoding='utf-8') as fout:
         json.dump(transform, fout, indent=1, ensure_ascii=False, sort_keys=True)
+    with open("test_data.json", 'w', encoding='utf-8') as fout:
+        json.dump(transform_test, fout, indent=1, ensure_ascii=False, sort_keys=True)
 
 
 if __name__ == '__main__':
