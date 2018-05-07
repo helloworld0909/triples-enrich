@@ -13,6 +13,7 @@ class MultiTaskLSTM(object):
 
     attrLabelDim = 2
     valueTaggingDim = 3  # 0 is padding
+    valueLabelDim = 2
 
     def __init__(self, **kwargs):
         self.attrVocabSize = kwargs.get('attrVocabSize', 1000)
@@ -60,7 +61,43 @@ class MultiTaskLSTM(object):
         model.summary()
         return model
 
+    def build_2(self):
+        attr_input = Input((self.maxAttrLen,), name='attr_input')
+        attr = Embedding(
+            input_dim=self.attrVocabSize,
+            output_dim=self.params['wordEmbeddingDim'],
+            input_length=self.maxAttrLen,
+            trainable=True,
+            name='attr_embedding'
+        )(attr_input)
+        attr_vec = Bidirectional(LSTM(self.params['lstmOutDim'], return_sequences=False), name='attr_bilstm')(attr)
+
+        value_input = Input((self.maxValueLen,), name='value_input')
+        value = Embedding(
+            input_dim=self.valueVocabSize,
+            output_dim=self.params['wordEmbeddingDim'],
+            input_length=self.maxValueLen,
+            trainable=True,
+            name='value_embedding'
+        )(value_input)
+        value_vec = Bidirectional(LSTM(self.params['lstmOutDim'], return_sequences=False), name='value_bilstm')(value)
+
+        merge_layer = concatenate([attr_vec, value_vec])
+        task1_output = Dense(self.attrLabelDim, activation='softmax', name='task1_output')(merge_layer)
+
+        task2_output = Dense(self.valueLabelDim, activation='softmax', name='task2_output')(merge_layer)
+
+        model = Model(inputs=[attr_input, value_input], outputs=[task1_output, task2_output])
+        model.compile(optimizer='adam',
+                      loss={'task1_output': 'sparse_categorical_crossentropy',
+                            'task2_output': 'sparse_categorical_crossentropy'},
+                      loss_weights={'task1_output': 1, 'task2_output': 1},
+                      metrics=['accuracy']
+                      )
+        model.summary()
+        return model
+
 
 if __name__ == '__main__':
     modelWrapper = MultiTaskLSTM()
-    modelWrapper.build()
+    modelWrapper.build_2()
