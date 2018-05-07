@@ -25,6 +25,18 @@ def init_word2idx(filename='all_data.json'):
     return attr_word2idx, value_word2idx
 
 
+def init_raw_sequences(filename='all_data.json'):
+    raw_seq = []
+    with open(filename, 'r', encoding='utf-8') as input_file:
+        data = json.load(input_file)
+
+    for attr, body in data.items():
+        for value in body['values'].keys():
+            raw_seq.append((attr, value))
+
+    return raw_seq
+
+
 def init_sequences(filename, attr_word2idx, value_word2idx):
     with open(filename, 'r', encoding='utf-8') as input_file:
         data = json.load(input_file)
