@@ -1,4 +1,5 @@
 import json
+import re
 import random
 import offlineEnrich
 
@@ -26,6 +27,7 @@ def main():
         jsonObj = json.load(fin)
 
     model = offlineEnrich.INFOBOX_ENRICH()
+    punctuation_pattern = re.compile(r'[/、,，;；|]')
 
     transform = {}
     transform_test = {}
@@ -36,6 +38,8 @@ def main():
         body = {'isMulti': property_label[attr]}
         value_list = {}
         for value in values:
+            if punctuation_pattern.search(value) is None:
+                continue
             mention_list = model.split_one_value(attr, value, threshold=-1)
             indices = split_indices(mention_list)
             value_list[value] = indices
@@ -50,6 +54,9 @@ def main():
         json.dump(transform, fout, indent=1, ensure_ascii=False, sort_keys=True)
     with open("test_data.json", 'w', encoding='utf-8') as fout:
         json.dump(transform_test, fout, indent=1, ensure_ascii=False, sort_keys=True)
+    transform.update(transform_test)
+    with open("all_data.json", 'w', encoding='utf-8') as fout:
+        json.dump(transform, fout, indent=1, ensure_ascii=False, sort_keys=True)
 
 
 if __name__ == '__main__':
