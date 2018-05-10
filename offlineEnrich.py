@@ -18,7 +18,7 @@ import json
 
 
 class INFOBOX_ENRICH:
-    menu_path = ""
+    menu_path = "..\\"
     attribute_match_path = menu_path + "middleware\\similar_attribute_pair_human.txt"
     date_attribute_path = menu_path + "middleware\\date_attribute_list.txt"
     mention_path = menu_path + "middleware\\mention_list.txt"

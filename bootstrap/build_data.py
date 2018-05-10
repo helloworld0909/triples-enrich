@@ -1,6 +1,5 @@
 import json
 import re
-import random
 import offlineEnrich
 
 
@@ -44,7 +43,7 @@ def main():
             indices = split_indices(mention_list)
             value_list[value] = indices
         body['values'] = value_list
-        if random.random() < 0.9:
+        if hash(attr) % 10 < 9:
             transform[attr] = body
         else:
             transform_test[attr] = body
