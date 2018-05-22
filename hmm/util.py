@@ -26,7 +26,6 @@ class HMMFactory(object):
                 code.append(self.word2index['Unknown'])
         return code
 
-
     def wordcount(self):
         wordcount = defaultdict(int)
         for line in self.input_file:
@@ -36,7 +35,7 @@ class HMMFactory(object):
         return wordcount
 
     def hiddenProb(self):
-        probVector = [0.0]*2
+        probVector = [0.0] * 2
         for line in self.input_file:
             split_value = line.strip().split('\t')[-1]
             count = self.count_split(split_value)
@@ -44,7 +43,6 @@ class HMMFactory(object):
             probVector[0] += len(split_value) - count
         total = sum(probVector)
         return np.array(probVector) / total
-
 
     @staticmethod
     def count_split(string):
@@ -62,7 +60,7 @@ class HMMFactory(object):
             n_split = self.count_split(split_value)
             matrix[0][1] += n_split
             matrix[1][0] += n_split
-            matrix[0][0] += len(split_value) - 2*n_split - 1
+            matrix[0][0] += len(split_value) - 2 * n_split - 1
         transMatrix = np.empty(shape=(2, 2))
         for i in range(2):
             for j in range(2):
@@ -80,7 +78,7 @@ class HMMFactory(object):
         return ret
 
     def emissionMatrix(self):
-        matrix = [[0.0]*self.n_word, [0.0]*self.n_word]
+        matrix = [[0.0] * self.n_word, [0.0] * self.n_word]
         for line in self.input_file:
             raw_value, split_value = line.strip().split('\t')[-2], line.strip().split('\t')[-1]
 
@@ -98,7 +96,8 @@ class HMMFactory(object):
 
 
 def encode_state(split_value):
-    return list(map(lambda c:int(c == '|'), split_value))
+    return list(map(lambda c: int(c == '|'), split_value))
+
 
 def transform_state(state_list, raw_value):
     ret = []
@@ -108,6 +107,7 @@ def transform_state(state_list, raw_value):
         else:
             ret.append(c)
     return ''.join(ret)
+
 
 def sample_file(filepath, n=100):
     with open(filepath, 'r', encoding='utf-8') as input_file:
@@ -121,5 +121,6 @@ def sample_file(filepath, n=100):
                 if line not in sample:
                     new_input.write(line)
 
+
 if __name__ == '__main__':
-    sample_file('train.txt', n = 300)
+    sample_file('train.txt', n=300)
