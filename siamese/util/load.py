@@ -70,6 +70,33 @@ def load_labels(filename, word2idx):
     return attr_sequences, value_sequences, y
 
 
+def load_test(filename, word2idx):
+
+    attr_sequences = []
+    value_sequences = []
+    y = []
+
+    with open(os.path.join(DATA_PATH, filename), 'r', encoding='utf-8') as input_file:
+        for line in input_file:
+            attr, value, value_after = line.strip().split('\t')
+            attr_seq = list(map(lambda c: word2idx.get(c, 1), attr))
+            value_seq = list(map(lambda c: word2idx.get(c, 1), value))
+            attr_sequences.append(attr_seq)
+            value_sequences.append(value_seq)
+
+            if '|' in value_after:
+                y.append(0)
+            else:
+                y.append(1)
+
+    attr_sequences = pad_sequences(attr_sequences, maxlen=maxAttrLen)
+    value_sequences = pad_sequences(value_sequences, maxlen=maxValueLen)
+    y = np.array(y)
+
+    return attr_sequences, value_sequences, y
+
+
 if __name__ == '__main__':
     lookup = init_word2idx()
-    print(load_labels('all_data.json', lookup))
+    # print(load_labels('all_data.json', lookup))
+    print(load_test('test_labeled_with_attribute_1.txt', lookup))

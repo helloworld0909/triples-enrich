@@ -7,6 +7,7 @@ def main():
     x1, x2, y = load_labels('all_data.json', lookup)
     model = SiameseLSTM(vocabSize=len(lookup)).build()
     model.fit([x1, x2], y, validation_split=0.1, epochs=3, shuffle=True)
+    model.save('siamese.h5')
 
 
 if __name__ == '__main__':
